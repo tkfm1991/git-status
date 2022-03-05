@@ -1,0 +1,28 @@
+#!/usr/local/var/pyenv/shims/python
+# coding: UTF-8
+
+import argparse
+import subprocess
+
+
+def setting_parser():
+    """Setting Parser"""
+    parser = argparse.ArgumentParser(description='EC2インスタンスの操作')
+    parser.add_argument('-p', '--profile', help='Profile名')
+    return parser.parse_args()
+
+
+def main(args):
+    """AWS CLIコマンド発行"""
+    if args.profile is None:
+        profile = 'private'
+    else:
+        profile = args.profile
+    
+    cmd = "aws ec2 describe-instances --filters Name=tag-key,Values=Name --query 'Reservations[*].Instances[*].{Name:Tags[?Key==`Name`]|[0].Value,Public_IP:PublicIpAddress,AZ:Placement.AvailabilityZone, Instance:InstanceId, State:State.Name}' --output table " + "--profile " + profile
+    result = subprocess.call(cmd, shell=True)
+
+
+if __name__ == '__main__':
+    args = setting_parser()
+    main(args)
